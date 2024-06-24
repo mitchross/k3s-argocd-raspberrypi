@@ -15,6 +15,6 @@
 - name: Bootstrap applications
   shell: |
     kubectl kustomize --enable-helm --load-restrictor=LoadRestrictionsNone \
-      ../kubernetes/bootstrap/argocd/overlays/"{{overlay}}" | kubectl apply -f -
+      ../kubernetes/bootstrap/argocd/overlays/prod | kubectl apply -f -
   args:
     executable: /bin/bash

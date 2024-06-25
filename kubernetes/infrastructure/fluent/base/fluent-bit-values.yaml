@@ -155,7 +155,7 @@ luaScripts:
         return 1, timestamp - utc_time_diff, record
     end
 
-# Enable fluentbit instalaltion on master node.
+# Enable fluentbit instalaltion on main node.
 tolerations:
   - key: node-role.kubernetes.io/control-plane
     operator: Exists

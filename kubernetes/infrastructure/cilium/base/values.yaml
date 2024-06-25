@@ -9,9 +9,9 @@ operator:
 # replicas: 1  # Uncomment this if you only have one node
   rollOutPods: true
   
-  # Install operator on master node
+  # Install operator on main node
   nodeSelector:
-    node-role.kubernetes.io/master: "true"
+    node-role.kubernetes.io/main: "true"
 
   # Enable prometheus integration for cilium-operator
   prometheus:

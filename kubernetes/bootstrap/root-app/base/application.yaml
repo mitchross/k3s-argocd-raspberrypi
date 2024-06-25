@@ -12,7 +12,7 @@ spec:
   source:
     path: kubernetes/bootstrap/apps/overlays/prod
     repoURL: https://github.com/mitchross/k3s-argocd-raspberrypi
-    targetRevision: master
+    targetRevision: main
   destination:
     namespace: argocd
     name: in-cluster

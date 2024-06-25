@@ -13,7 +13,7 @@ spec:
   source:
     path: kubernetes/infrastructure/system-upgrade/overlays/prod
     repoURL: https://github.com/mitchross/k3s-argocd-raspberrypi
-    targetRevision: master
+    targetRevision: main
   syncPolicy:
     automated:
       prune: true

@@ -260,7 +260,7 @@ fileConfigs:
         include_timestamp true
 
         # ILM Settings - WITH ROLLOVER support
-        # https://github.com/uken/fluent-plugin-elasticsearch/blob/master/README.Troubleshooting.md#enable-index-lifecycle-management
+        # https://github.com/uken/fluent-plugin-elasticsearch/blob/main/README.Troubleshooting.md#enable-index-lifecycle-management
         # application_name ${index_app_name}
         index_date_pattern ""
         enable_ilm true

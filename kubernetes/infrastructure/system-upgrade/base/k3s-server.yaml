@@ -10,9 +10,9 @@ spec:
     matchExpressions:
       - key: node-role.kubernetes.io/control-plane
         operator: Exists
-  # Enable plan deployment on master node (noSchedulable by installation)
+  # Enable plan deployment on main node (noSchedulable by installation)
   tolerations:
-    - key: node-role.kubernetes.io/master
+    - key: node-role.kubernetes.io/main
       operator: Exists
       effect: NoSchedule
   serviceAccountName: system-upgrade

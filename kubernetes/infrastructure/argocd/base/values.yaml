@@ -2,6 +2,7 @@
 configs:
   params:
     # Run server without TLS
+    # Traefik finishes TLS connections
     server.insecure: true
   cm:
     statusbadge.enabled: true
@@ -65,5 +66,5 @@ server:
       #   * 'letsencrypt-issuer' (valid TLS certificate using IONOS API) 
       #   * 'ca-issuer' (CA-signed certificate, not valid)
       cert-manager.io/cluster-issuer: letsencrypt-issuer
-      cert-manager.io/common-name: argocd.vanillax.me
+      cert-manager.io/common-name: argocd.vanillax.xyz
 

@@ -8,7 +8,7 @@ KUBE_CONFIG_PATH = $(KUBECONFIG)
 default: metal system external smoke-test post-install clean
 
 configure:
-	./scripts/configure
+	/scripts/configure
 	git status
 
 metal:

@@ -16,14 +16,14 @@
 
         # Define a list of packages that are not compatible with macOS
         linuxOnlyPackages = [
-          pkgs.iproute2
-          pkgs.libisoburn
+          "iproute2"
+          "libisoburn"
         ];
 
         # Function to filter out Linux-only packages on macOS
         filterLinuxPackages = list:
           if pkgs.stdenv.isDarwin
-          then builtins.filter (p: !(builtins.elem p linuxOnlyPackages)) list
+          then builtins.filter (p: !(builtins.elem (p.name or "") linuxOnlyPackages)) list
           else list;
 
       in

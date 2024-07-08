@@ -9,28 +9,17 @@
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
+        # TODO remove unfree after removing Terraform
+        # (Source: https://xeiaso.net/blog/notes/nix-flakes-terraform-unfree-fix)
         pkgs = import nixpkgs {
           inherit system;
           config.allowUnfree = true;
         };
-
-        # Define a list of packages that are not compatible with macOS
-        linuxOnlyPackages = [
-          "iproute2"
-          "libisoburn"
-        ];
-
-        # Function to filter out Linux-only packages on macOS
-        filterLinuxPackages = list:
-          if pkgs.stdenv.isDarwin
-          then builtins.filter (p: !(builtins.elem (p.name or "") linuxOnlyPackages)) list
-          else list;
-
       in
       with pkgs;
       {
         devShells.default = mkShell {
-          packages = filterLinuxPackages [
+          packages = [
             ansible
             ansible-lint
             bmake
@@ -41,6 +30,7 @@
             git
             go
             gotestsum
+            iproute2
             jq
             k9s
             kanidm
@@ -48,6 +38,7 @@
             kubectl
             kubernetes-helm
             kustomize
+            libisoburn
             neovim
             openssh
             p7zip
@@ -65,11 +56,6 @@
               rich
             ]))
           ];
-
-          shellHook = if stdenv.isDarwin then ''
-            echo "Note: Some Linux-specific tools (iproute2, libisoburn) are not available on macOS."
-            echo "Consider using Docker or a VM for full Linux environment if needed."
-          '' else "";
         };
       }
     );

@@ -1,0 +1,55 @@
+app-template:
+  controllers:
+    http-echo:
+      containers:
+        http-echo:
+          image:
+            repository: mendhak/http-https-echo
+            tag: 33
+          probes:
+            liveness:
+              enabled: true
+            readiness:
+              enabled: true
+            startup:
+              enabled: true
+              spec:
+                failureThreshold: 30
+                periodSeconds: 5
+          resources:
+            limits:
+              cpu: 200m
+              memory: 50Mi
+            requests:
+              cpu: 10m
+              memory: 14Mi
+          securityContext:
+            runAsUser: 1000
+      replicas: 1
+  defaultPodOptions:
+    topologySpreadConstraints:
+    - labelSelector:
+        matchLabels:
+          app.kubernetes.io/instance: http-echo
+          app.kubernetes.io/name: http-echo
+      maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+  route:
+    main:
+      hostnames:
+      - echo.<path:stringreplacesecret#domain>
+      parentRefs:
+      - name: internal
+        namespace: gateway
+        sectionName: https
+      rules:
+      - backendRefs:
+        - name: http-echo
+          port: 3000
+  service:
+    http-echo:
+      controller: http-echo
+      ports:
+        http:
+          port: 8080

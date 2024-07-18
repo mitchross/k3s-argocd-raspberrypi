@@ -1,0 +1,44 @@
+authentik:
+  postgresql:
+    host: cluster01.postgres
+    name: authentik
+global:
+  env:
+  - name: AUTHENTIK_SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        key: secret_key
+        name: authentik-configsecrets
+  - name: AUTHENTIK_BOOTSTRAP_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        key: bootstrap_password
+        name: authentik-configsecrets
+  - name: AUTHENTIK_BOOTSTRAP_TOKEN
+    valueFrom:
+      secretKeyRef:
+        key: bootstrap_token
+        name: authentik-configsecrets
+  - name: AUTHENTIK_BOOTSTRAP_EMAIL
+    valueFrom:
+      secretKeyRef:
+        key: bootstrap_email
+        name: authentik-configsecrets
+  - name: AUTHENTIK_POSTGRESQL__USER
+    valueFrom:
+      secretKeyRef:
+        key: postgresuser
+        name: authentik-configsecrets
+  - name: AUTHENTIK_POSTGRESQL__PASSWORD
+    valueFrom:
+      secretKeyRef:
+        key: postgrespassword
+        name: authentik-configsecrets
+redis:
+  enabled: true
+  master:
+    persistence:
+      enabled: false
+server:
+  ingress:
+    enabled: false

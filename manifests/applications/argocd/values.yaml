@@ -1,0 +1,112 @@
+configs:
+  cm:
+    dex.config: "connectors:\n  - type: oidc\n    name: authentik\n    id: authentik\n\
+      \    config:\n      issuer: https://auth.<path:stringreplacesecret#domain>/application/o/argocd/\n\
+      \      clientID: $sso:client_id\n      clientSecret: $sso:client_secret\n  \
+      \    insecureEnableGroups: true\n      scopes:\n        - openid\n        -\
+      \ profile\n        - email\n"
+    resource.compareoptions: 'ignoreAggregatedRoles: true
+
+      '
+    url: https://argocd.<path:stringreplacesecret#domain>
+  params:
+    server.insecure: true
+  rbac:
+    policy.csv: 'g, ArgoCD Admin, role:admin
+
+      '
+extraObjects:
+- apiVersion: v1
+  data:
+    avp-directory-include.yaml: "apiVersion: argoproj.io/v1alpha1\nkind: ConfigManagementPlugin\n\
+      metadata:\n  name: avp-directory-include\nspec:\n  allowConcurrency: true\n\
+      \  generate:\n    command:\n      - bash\n      - \"-c\"\n      - |\n      \
+      \  argocd-vault-plugin generate $ARGOCD_ENV_FILE_NAME\n  lockRepo: false\n"
+    kustomize-inline.yaml: "apiVersion: argoproj.io/v1alpha1\nkind: ConfigManagementPlugin\n\
+      metadata:\n  name: kustomize-inline\nspec:\n  allowConcurrency: true\n  generate:\n\
+      \    command:\n      - /bin/sh\n      - -c\n    args:\n      - |\n        echo\
+      \ \"$ARGOCD_ENV_KUSTOMIZATION_YAML\" > kustomization.yaml;\n        kustomize\
+      \ build\n  lockRepo: false\n"
+  kind: ConfigMap
+  metadata:
+    name: cmp-plugin
+    namespace: '{{ .Release.Namespace }}'
+repoServer:
+  deploymentAnnotations:
+    reloader.stakater.com/auto: 'true'
+  extraContainers:
+  - command:
+    - /var/run/argocd/argocd-cmp-server
+    env:
+    - name: AVP_TYPE
+      value: kubernetessecret
+    image: '{{ default .Values.global.image.repository .Values.server.image.repository
+      }}:{{ default (include "argo-cd.defaultTag" .) .Values.server.image.tag }}'
+    name: plugin-avp-directory-include
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 999
+    volumeMounts:
+    - mountPath: /var/run/argocd
+      name: var-files
+    - mountPath: /home/argocd/cmp-server/plugins
+      name: plugins
+    - mountPath: /tmp
+      name: cmp-tmp
+    - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+      name: cmp-plugin
+      subPath: avp-directory-include.yaml
+    - mountPath: /usr/local/bin/argocd-vault-plugin
+      name: custom-tools
+      subPath: argocd-vault-plugin
+  - command:
+    - /var/run/argocd/argocd-cmp-server
+    image: '{{ default .Values.global.image.repository .Values.server.image.repository
+      }}:{{ default (include "argo-cd.defaultTag" .) .Values.server.image.tag }}'
+    name: plugin-kustomize-inline
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 999
+    volumeMounts:
+    - mountPath: /var/run/argocd
+      name: var-files
+    - mountPath: /home/argocd/cmp-server/plugins
+      name: plugins
+    - mountPath: /tmp
+      name: cmp-tmp
+    - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+      name: cmp-plugin
+      subPath: kustomize-inline.yaml
+  initContainers:
+  - args:
+    - curl -L https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v$(AVP_VERSION)/argocd-vault-plugin_$(AVP_VERSION)_linux_$(arch
+      | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) -o argocd-vault-plugin && chmod
+      +x argocd-vault-plugin && mv argocd-vault-plugin /custom-tools/
+    command:
+    - sh
+    - -c
+    env:
+    - name: AVP_VERSION
+      value: 1.17.0
+    image: registry.access.redhat.com/ubi8:8.10-901.1717584420
+    name: download-tools
+    volumeMounts:
+    - mountPath: /custom-tools
+      name: custom-tools
+  rbac:
+  - apiGroups:
+    - ''
+    resources:
+    - secrets
+    verbs:
+    - get
+    - watch
+    - list
+  volumes:
+  - configMap:
+      name: cmp-plugin
+    name: cmp-plugin
+  - emptyDir: {}
+    name: custom-tools
+  - emptyDir: {}
+    name: cmp-tmp

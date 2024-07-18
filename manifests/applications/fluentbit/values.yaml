@@ -1,0 +1,5 @@
+config:
+  outputs: "[OUTPUT]\n    name                   loki\n    match                 \
+    \ *\n    host                   loki-gateway.observability.svc.cluster.local\n\
+    \    port                   80\n    labels                 job=fluentbit\n   \
+    \ auto_kubernetes_labels on\n"

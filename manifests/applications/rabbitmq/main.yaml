@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: cluster01
+  namespace: rabbitmq
+spec:
+  persistence:
+    storage: 2Gi
+    storageClassName: longhorn
+  replicas: 3
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Vhost
+metadata:
+  name: cluster01-test
+  namespace: rabbitmq
+spec:
+  name: test
+  rabbitmqClusterReference:
+    name: cluster01
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: cluster01-user0
+  namespace: rabbitmq
+spec:
+  rabbitmqClusterReference:
+    name: cluster01
+  tags:
+  - management

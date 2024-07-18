@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: observability
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: sso
+  namespace: observability
+spec:
+  data:
+  - remoteRef:
+      key: sso
+      property: grafana_client_id
+    secretKey: grafana_client_id
+  - remoteRef:
+      key: sso
+      property: grafana_client_secret
+    secretKey: grafana_client_secret
+  refreshInterval: 5m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: 1password
+  target:
+    creationPolicy: Owner
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana
+  namespace: observability
+spec:
+  ingressClassName: ingress-nginx-internal
+  rules:
+  - host: grafana.<path:stringreplacesecret#domain>
+    http:
+      paths:
+      - backend:
+          service:
+            name: grafana
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: grafana
+  namespace: observability
+spec:
+  hostnames:
+  - grafana.<path:stringreplacesecret#domain>
+  parentRefs:
+  - name: internal
+    namespace: gateway
+    sectionName: https
+  - name: external
+    namespace: gateway
+    sectionName: https
+  rules:
+  - backendRefs:
+    - name: grafana
+      port: 80
+---
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  annotations:
+    external-dns.custom/type: private
+  name: grafana
+  namespace: observability
+spec:
+  endpoints:
+  - dnsName: grafana.<path:stringreplacesecret#domain>
+    providerSpecific:
+    - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+      value: 'false'
+    recordType: CNAME
+    targets:
+    - intgw.<path:stringreplacesecret#domain>

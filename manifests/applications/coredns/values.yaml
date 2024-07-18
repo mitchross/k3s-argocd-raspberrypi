@@ -1,0 +1,62 @@
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+deployment:
+  annotations:
+    reloader.stakater.com/auto: 'true'
+fullnameOverride: coredns
+k8sAppLabelOverride: kube-dns
+replicaCount: 1
+servers:
+- plugins:
+  - name: log
+  - name: errors
+  - configBlock: lameduck 5s
+    name: health
+  - name: ready
+  - configBlock: 'pods insecure
+
+      fallthrough in-addr.arpa ip6.arpa
+
+      ttl 30'
+    name: kubernetes
+    parameters: cluster.local in-addr.arpa ip6.arpa
+  - name: prometheus
+    parameters: 0.0.0.0:9153
+  - name: forward
+    parameters: . /etc/resolv.conf
+  - name: cache
+    parameters: 30
+  - name: loop
+  - name: reload
+  - name: loadbalance
+  port: 53
+  zones:
+  - scheme: dns://
+    use_tcp: true
+    zone: .
+service:
+  clusterIP: 10.43.0.10
+  name: kube-dns
+serviceAccount:
+  create: true
+tolerations:
+- key: CriticalAddonsOnly
+  operator: Exists
+- effect: NoSchedule
+  key: node-role.kubernetes.io/control-plane
+  operator: Exists
+- effect: NoSchedule
+  key: node-role.kubernetes.io/master
+  operator: Exists
+topologySpreadConstraints:
+- labelSelector:
+    matchLabels:
+      app.kubernetes.io/instance: coredns
+  maxSkew: 1
+  topologyKey: kubernetes.io/hostname
+  whenUnsatisfiable: DoNotSchedule

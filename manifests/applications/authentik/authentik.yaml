@@ -1,0 +1,334 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: authentik
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  name: authentik-configsecrets
+  namespace: authentik
+spec:
+  data:
+  - remoteRef:
+      key: authentik
+      property: bootstrap_password
+    secretKey: bootstrap_password
+  - remoteRef:
+      key: authentik
+      property: bootstrap_token
+    secretKey: bootstrap_token
+  - remoteRef:
+      key: authentik
+      property: bootstrap_email
+    secretKey: bootstrap_email
+  - remoteRef:
+      key: authentik
+      property: secret_key
+    secretKey: secret_key
+  - remoteRef:
+      key: postgres.cluster01.authentik.owner
+      property: password
+    secretKey: postgrespassword
+  - remoteRef:
+      key: postgres.cluster01.authentik.owner
+      property: username
+    secretKey: postgresuser
+  refreshInterval: 5m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: 1password
+  target:
+    creationPolicy: Owner
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: auth
+  namespace: authentik
+spec:
+  ingressClassName: ingress-nginx-internal
+  rules:
+  - host: auth.<path:stringreplacesecret#domain>
+    http:
+      paths:
+      - backend:
+          service:
+            name: authentik-server
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: authentik
+  namespace: authentik
+spec:
+  hostnames:
+  - auth.<path:stringreplacesecret#domain>
+  parentRefs:
+  - name: internal
+    namespace: gateway
+    sectionName: https
+  - name: external
+    namespace: gateway
+    sectionName: https
+  rules:
+  - backendRefs:
+    - name: authentik-server
+      port: 80
+---
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  annotations:
+    external-dns.custom/type: private
+  name: authentik
+  namespace: authentik
+spec:
+  endpoints:
+  - dnsName: auth.<path:stringreplacesecret#domain>
+    recordType: CNAME
+    targets:
+    - ingress.<path:stringreplacesecret#domain>
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  name: authentik-providerconfig
+  namespace: authentik
+spec:
+  data:
+  - remoteRef:
+      key: authentik
+      property: bootstrap_token
+    secretKey: token
+  refreshInterval: 5m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: 1password
+  target:
+    creationPolicy: Owner
+---
+apiVersion: tf.upbound.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: authentik-config
+spec:
+  configuration: "provider \"authentik\" {\n  url   = \"https://auth.<path:stringreplacesecret#domain>\"\
+    \n  token = file(\"${path.module}/token\")\n}\n\nterraform {\n  required_providers\
+    \ {\n    authentik = {\n      source = \"goauthentik/authentik\"\n      version\
+    \ = \"2024.4.0\"\n    }\n  }\n  backend \"kubernetes\" {\n    secret_suffix  \
+    \   = \"authentik-provider\"\n    namespace         = \"authentik\"\n    in_cluster_config\
+    \ = true\n  }\n}\n"
+  credentials:
+  - filename: token
+    secretRef:
+      key: token
+      name: authentik-providerconfig
+      namespace: authentik
+    source: Secret
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  name: sso
+  namespace: authentik
+spec:
+  data:
+  - remoteRef:
+      key: sso
+      property: argocd_client_id
+    secretKey: argocd_client_id
+  - remoteRef:
+      key: sso
+      property: argocd_client_secret
+    secretKey: argocd_client_secret
+  - remoteRef:
+      key: sso
+      property: grafana_client_id
+    secretKey: grafana_client_id
+  - remoteRef:
+      key: sso
+      property: grafana_client_secret
+    secretKey: grafana_client_secret
+  - remoteRef:
+      key: sso
+      property: miniflux_client_id
+    secretKey: miniflux_client_id
+  - remoteRef:
+      key: sso
+      property: miniflux_client_secret
+    secretKey: miniflux_client_secret
+  - remoteRef:
+      key: sso
+      property: ryot_client_id
+    secretKey: ryot_client_id
+  - remoteRef:
+      key: sso
+      property: ryot_client_secret
+    secretKey: ryot_client_secret
+  - remoteRef:
+      key: sso
+      property: vikunja_client_id
+    secretKey: vikunja_client_id
+  - remoteRef:
+      key: sso
+      property: vikunja_client_secret
+    secretKey: vikunja_client_secret
+  - remoteRef:
+      key: sso
+      property: federation_google_client_id
+    secretKey: federation_google_client_id
+  - remoteRef:
+      key: sso
+      property: federation_google_client_secret
+    secretKey: federation_google_client_secret
+  refreshInterval: 5m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: 1password
+  target:
+    creationPolicy: Owner
+    template:
+      data:
+        sso.tfvars: 'argocd_client_id = "{{ .argocd_client_id | toString }}"
+
+          argocd_client_secret = "{{ .argocd_client_secret | toString }}"
+
+          grafana_client_id = "{{ .grafana_client_id | toString }}"
+
+          grafana_client_secret = "{{ .grafana_client_secret | toString }}"
+
+          miniflux_client_id = "{{ .miniflux_client_id | toString }}"
+
+          miniflux_client_secret = "{{ .miniflux_client_secret | toString }}"
+
+          ryot_client_id = "{{ .ryot_client_id | toString }}"
+
+          ryot_client_secret = "{{ .ryot_client_secret | toString }}"
+
+          vikunja_client_id = "{{ .vikunja_client_id | toString }}"
+
+          vikunja_client_secret = "{{ .vikunja_client_secret | toString }}"
+
+          federation_google_client_id = "{{ .federation_google_client_id | toString
+          }}"
+
+          federation_google_client_secret = "{{ .federation_google_client_secret |
+          toString }}"
+
+          '
+---
+apiVersion: tf.upbound.io/v1beta1
+kind: Workspace
+metadata:
+  name: authentik-sso
+spec:
+  forProvider:
+    module: "variable \"argocd_client_id\" {}\nvariable \"argocd_client_secret\" {}\n\
+      variable \"grafana_client_id\" {}\nvariable \"grafana_client_secret\" {}\nvariable\
+      \ \"miniflux_client_id\" {}\nvariable \"miniflux_client_secret\" {}\nvariable\
+      \ \"ryot_client_id\" {}\nvariable \"ryot_client_secret\" {}\nvariable \"vikunja_client_id\"\
+      \ {}\nvariable \"vikunja_client_secret\" {}\nvariable \"federation_google_client_id\"\
+      \ {}\nvariable \"federation_google_client_secret\" {}\n\ndata \"authentik_certificate_key_pair\"\
+      \ \"generated\" {\n  name = \"authentik Self-signed Certificate\"\n}\n\ndata\
+      \ \"authentik_flow\" \"default-authorization-flow\" {\n  slug = \"default-provider-authorization-explicit-consent\"\
+      \n}\n\ndata \"authentik_flow\" \"default-source-authentication\" {\n  slug =\
+      \ \"default-source-authentication\"\n}\n\ndata \"authentik_flow\" \"default-source-enrollment\"\
+      \ {\n  slug = \"default-source-enrollment\"\n}\n\ndata \"authentik_scope_mapping\"\
+      \ \"email\" {\n  managed = \"goauthentik.io/providers/oauth2/scope-email\"\n\
+      }\n\ndata \"authentik_scope_mapping\" \"offline_access\" {\n  managed = \"goauthentik.io/providers/oauth2/scope-offline_access\"\
+      \n}\n\ndata \"authentik_scope_mapping\" \"openid\" {\n  managed = \"goauthentik.io/providers/oauth2/scope-openid\"\
+      \n}\n\ndata \"authentik_scope_mapping\" \"profile\" {\n  managed = \"goauthentik.io/providers/oauth2/scope-profile\"\
+      \n}\n\ndata \"authentik_stage\" \"default-authentication-identification\" {\n\
+      \  name = \"default-authentication-identification\"\n}\n\nresource \"authentik_group\"\
+      \ \"argocd_admin\" {\n  name         = \"ArgoCD Admin\"\n  is_superuser = false\n\
+      }\n\nresource \"authentik_provider_oauth2\" \"argocd_ouath2\" {\n  name    \
+      \  = \"argocd\"\n  client_id = var.argocd_client_id\n  client_secret = var.argocd_client_secret\n\
+      \  authorization_flow = data.authentik_flow.default-authorization-flow.id\n\
+      \  access_code_validity = \"minutes=10\"\n  redirect_uris = [ \"https://argocd.<path:stringreplacesecret#domain>/api/dex/callback\"\
+      ,\"http://localhost:8085/auth/callback\"]\n  signing_key = data.authentik_certificate_key_pair.generated.id\n\
+      \  property_mappings = [\n    data.authentik_scope_mapping.openid.id,\n    data.authentik_scope_mapping.email.id,\n\
+      \    data.authentik_scope_mapping.profile.id\n  ]\n}\n\nresource \"authentik_application\"\
+      \ \"argocd_application\" {\n  name = authentik_provider_oauth2.argocd_ouath2.name\n\
+      \  slug = authentik_provider_oauth2.argocd_ouath2.name\n  protocol_provider\
+      \ = authentik_provider_oauth2.argocd_ouath2.id\n  meta_icon = \"https://argo-cd.readthedocs.io/en/stable/assets/logo.png\"\
+      \n  meta_launch_url = \"https://argocd.<path:stringreplacesecret#domain>/auth/login\"\
+      \n  policy_engine_mode = \"all\"\n}\n\nresource \"authentik_group\" \"grafana_admin\"\
+      \ {\n  name         = \"Grafana Admin\"\n  is_superuser = false\n}\n\nresource\
+      \ \"authentik_provider_oauth2\" \"grafana_ouath2\" {\n  name      = \"grafana\"\
+      \n  client_id = var.grafana_client_id\n  client_secret = var.grafana_client_secret\n\
+      \  authorization_flow = data.authentik_flow.default-authorization-flow.id\n\
+      \  access_code_validity = \"minutes=10\"\n  redirect_uris = [ \"https://grafana.<path:stringreplacesecret#domain>/login/generic_oauth\"\
+      ]\n  signing_key = data.authentik_certificate_key_pair.generated.id\n  property_mappings\
+      \ = [\n    data.authentik_scope_mapping.openid.id,\n    data.authentik_scope_mapping.email.id,\n\
+      \    data.authentik_scope_mapping.profile.id,\n    data.authentik_scope_mapping.offline_access.id\n\
+      \  ]\n}\n\nresource \"authentik_application\" \"grafana_application\" {\n  name\
+      \ = authentik_provider_oauth2.grafana_ouath2.name\n  slug = authentik_provider_oauth2.grafana_ouath2.name\n\
+      \  protocol_provider = authentik_provider_oauth2.grafana_ouath2.id\n  meta_icon\
+      \ = \"https://grafana.com/static/img/menu/grafana2.svg\"\n  meta_launch_url\
+      \ = \"https://grafana.<path:stringreplacesecret#domain>/login/generic_oauth\"\
+      \n  policy_engine_mode = \"all\"\n}\n\nresource \"authentik_group\" \"miniflux_admin\"\
+      \ {\n  name         = \"Miniflux Admin\"\n  is_superuser = false\n}\n\nresource\
+      \ \"authentik_provider_oauth2\" \"miniflux_ouath2\" {\n  name      = \"miniflux\"\
+      \n  client_id = var.miniflux_client_id\n  client_secret = var.miniflux_client_secret\n\
+      \  authorization_flow = data.authentik_flow.default-authorization-flow.id\n\
+      \  access_code_validity = \"minutes=10\"\n  redirect_uris = [ \"https://rss.<path:stringreplacesecret#domain>/oauth2/oidc/callback\"\
+      ]\n  signing_key = data.authentik_certificate_key_pair.generated.id\n  property_mappings\
+      \ = [\n    data.authentik_scope_mapping.openid.id,\n    data.authentik_scope_mapping.email.id,\n\
+      \    data.authentik_scope_mapping.profile.id\n  ]\n}\n\nresource \"authentik_application\"\
+      \ \"miniflux_application\" {\n  name = authentik_provider_oauth2.miniflux_ouath2.name\n\
+      \  slug = authentik_provider_oauth2.miniflux_ouath2.name\n  protocol_provider\
+      \ = authentik_provider_oauth2.miniflux_ouath2.id\n  meta_icon = \"https://raw.githubusercontent.com/miniflux/logo/master/icon.svg\"\
+      \n  meta_launch_url = \"https://rss.<path:stringreplacesecret#domain>/oauth2/oidc/redirect\"\
+      \n  policy_engine_mode = \"all\"\n}\n\nresource \"authentik_group\" \"ryot_admin\"\
+      \ {\n  name         = \"ryot Admin\"\n  is_superuser = false\n}\n\nresource\
+      \ \"authentik_provider_oauth2\" \"ryot_ouath2\" {\n  name      = \"ryot\"\n\
+      \  client_id = var.ryot_client_id\n  client_secret = var.ryot_client_secret\n\
+      \  authorization_flow = data.authentik_flow.default-authorization-flow.id\n\
+      \  access_code_validity = \"minutes=10\"\n  redirect_uris = [ \"https://ryot.<path:stringreplacesecret#domain>/api/auth\"\
+      ]\n  signing_key = data.authentik_certificate_key_pair.generated.id\n  property_mappings\
+      \ = [\n    data.authentik_scope_mapping.openid.id,\n    data.authentik_scope_mapping.email.id,\n\
+      \    data.authentik_scope_mapping.profile.id\n  ]\n}\n\nresource \"authentik_application\"\
+      \ \"ryot_application\" {\n  name = authentik_provider_oauth2.ryot_ouath2.name\n\
+      \  slug = authentik_provider_oauth2.ryot_ouath2.name\n  protocol_provider =\
+      \ authentik_provider_oauth2.ryot_ouath2.id\n  meta_icon = \"https://github.com/IgnisDa/ryot/blob/main/docs/logo.png?raw=true\"\
+      \n  meta_launch_url = \"https://ryot.<path:stringreplacesecret#domain>/?redirectToProvider=true\"\
+      \n  policy_engine_mode = \"all\"\n}\n\nresource \"authentik_group\" \"vikunja_admin\"\
+      \ {\n  name         = \"Vikunja Admin\"\n  is_superuser = false\n}\n\nresource\
+      \ \"authentik_provider_oauth2\" \"vikunja_ouath2\" {\n  name      = \"vikunja\"\
+      \n  client_id = var.vikunja_client_id\n  client_secret = var.vikunja_client_secret\n\
+      \  authorization_flow = data.authentik_flow.default-authorization-flow.id\n\
+      \  access_code_validity = \"minutes=10\"\n  redirect_uris = [ \"https://tasks.<path:stringreplacesecret#domain>/auth/openid/authentik\"\
+      ]\n  signing_key = data.authentik_certificate_key_pair.generated.id\n  property_mappings\
+      \ = [\n    data.authentik_scope_mapping.openid.id,\n    data.authentik_scope_mapping.email.id,\n\
+      \    data.authentik_scope_mapping.profile.id\n  ]\n}\n\nresource \"authentik_application\"\
+      \ \"vikunja_application\" {\n  name = authentik_provider_oauth2.vikunja_ouath2.name\n\
+      \  slug = authentik_provider_oauth2.vikunja_ouath2.name\n  protocol_provider\
+      \ = authentik_provider_oauth2.vikunja_ouath2.id\n  meta_icon = \"https://kolaente.dev/avatars/dd73c49581a6904336c5d40fb66ef950?size=280\"\
+      \n  meta_launch_url = \"https://tasks.<path:stringreplacesecret#domain>/?redirectToProvider=true\"\
+      \n  policy_engine_mode = \"all\"\n}\n\nresource \"authentik_source_oauth\" \"\
+      google\" {\n  name                = \"google\"\n  slug                = \"google\"\
+      \n  authentication_flow = data.authentik_flow.default-source-authentication.id\n\
+      \  enrollment_flow     = data.authentik_flow.default-source-enrollment.id\n\n\
+      \  provider_type   = \"google\"\n  consumer_key    = var.federation_google_client_id\n\
+      \  consumer_secret = var.federation_google_client_secret\n  \n  user_matching_mode\
+      \ = \"email_link\"\n}"
+    source: Inline
+    varFiles:
+    - secretKeyRef:
+        key: sso.tfvars
+        name: sso
+        namespace: authentik
+      source: SecretKey
+  providerConfigRef:
+    name: authentik-config

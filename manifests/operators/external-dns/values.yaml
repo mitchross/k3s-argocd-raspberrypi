@@ -1,0 +1,17 @@
+annotationFilter: external-dns.custom/type in (public, private)
+env:
+- name: CF_API_TOKEN
+  valueFrom:
+    secretKeyRef:
+      key: cloudflare-api-key
+      name: external-dns
+fullnameOverride: external-dns
+policy: sync
+provider:
+  name: cloudflare
+registry: txt
+sources:
+- service
+- ingress
+- crd
+txtOwnerId: kubernetes

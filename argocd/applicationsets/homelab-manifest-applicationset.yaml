@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: homelab-manifest
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      files:
+      - path: manifests/**/*.yaml
+      repoURL: https://github.com/mitchross/k8s-homelab-argocd.git
+      revision: HEAD
+  goTemplate: true
+  template:
+    metadata:
+      name: '{{ normalize .path.filename }}'
+    spec:
+      destination:
+        namespace: '{{ trimSuffix (ext ".yaml") (base .path.filename) }}'
+        server: https://kubernetes.default.svc
+      project: homelab
+      source:
+        path: '{{ .path.path }}'
+        plugin:
+          env:
+          - name: FILE_NAME
+            value: '{{ .path.filename }}'
+          name: avp-directory-include
+        repoURL: https://github.com/mitchross/k8s-homelab-argocd.git
+        targetRevision: HEAD
+      syncPolicy:
+        automated:
+          allowEmpty: true
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true

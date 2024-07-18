@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: http-echo
+  namespace: argocd
+spec:
+  destination:
+    namespace: echo-server
+    server: https://kubernetes.default.svc
+  project: homelab
+  source:
+    chart: app-template
+    helm:
+      valueFiles:
+      - ../../manifests/applications/http-echo/values.yaml
+    repoURL: https://bjw-s.github.io/helm-charts/
+    targetRevision: 3.2.1
+  syncPolicy:
+    automated:
+      allowEmpty: true
+      prune: true
+      selfHeal: true

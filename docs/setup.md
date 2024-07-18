@@ -122,7 +122,7 @@ kubectl taint nodes rk1-01 node-role.kubernetes.io/control-plane:NoSchedule
 
 
 # INSTALL CILIUM
-export cilium_applicationyaml=$(curl -sL "https://raw.githubusercontent.com/mitchross/k8s-homelab-argocd/main/manifest/kube-system.yaml" | yq eval-all '. | select(.metadata.name == "cilium" and .kind == "Application")' -)
+export cilium_applicationyaml=$(curl -sL "https://raw.githubusercontent.com/mitchross/k3s-argocd-raspberrypi/main/manifests/infrastructure/kube-system/main.yaml" | yq eval-all '. | select(.metadata.name == "cilium" and .kind == "Application")' -)
 export cilium_name=$(echo "$cilium_applicationyaml" | yq eval '.metadata.name' -)
 export cilium_chart=$(echo "$cilium_applicationyaml" | yq eval '.spec.source.chart' -)
 export cilium_repo=$(echo "$cilium_applicationyaml" | yq eval '.spec.source.repoURL' -)

@@ -5,7 +5,7 @@ metadata:
   namespace: argocd
 spec:
   sourceRepos:
-    - 'https://gitlab.com/mitchross/*'
+    - 'https://github.com/mitchross/*'
   destinations:
     - namespace: 'argocd'
       server: '*'

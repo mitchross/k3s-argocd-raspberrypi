@@ -1,6 +1,0 @@
-persistence:
-  defaultClass: true
-  defaultClassReplicaCount: 3
-  reclaimPolicy: Retain
-preUpgradeChecker:
-  jobEnabled: false

@@ -1,4 +1,0 @@
-connect:
-  credentialsKey: 1password-credentials.json
-  credentialsName: 1passwordconnect
-  serviceType: ClusterIP

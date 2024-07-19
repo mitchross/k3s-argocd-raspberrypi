@@ -11,7 +11,7 @@ spec:
     - protocol: HTTPS
       port: 443
       name: https-gateway
-      hostname: "*.stonegarden.dev"
+      hostname: "*.vanillax.xyz"
       tls:
         certificateRefs:
           - kind: Secret

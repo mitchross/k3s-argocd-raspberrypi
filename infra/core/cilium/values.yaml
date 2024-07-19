@@ -2,7 +2,7 @@ cluster:
   name: abel
   id: 1
 
-k8sServiceHost: "192.168.1.100"
+k8sServiceHost: "192.168.100.176"
 k8sServicePort: "6443"
 kubeProxyReplacement: true
 
@@ -79,7 +79,7 @@ ingressController:
   loadbalancerMode: shared
   service:
     annotations:
-      io.cilium/lb-ipam-ips: 192.168.1.223
+      io.cilium/lb-ipam-ips: 192.168.100.51
     # Random values so Argo CD doesn't complain about the service being out of sync
     insecureNodePort: 32434
     secureNodePort: 31247

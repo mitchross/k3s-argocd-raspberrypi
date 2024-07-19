@@ -7,7 +7,7 @@ spec:
   project: app-of-apps
   source:
     path: apps
-    repoURL: https://gitlab.com/vehagn/mini-homelab.git
+    repoURL: https://github.com/mitchross/k3s-argocd-raspberrypi
     targetRevision: HEAD
   destination:
     namespace: argocd

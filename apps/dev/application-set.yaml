@@ -8,7 +8,7 @@ metadata:
 spec:
   generators:
     - git:
-        repoURL: https://gitlab.com/vehagn/mini-homelab.git
+        repoURL: https://github.com/mitchross/k3s-argocd-raspberrypi
         revision: HEAD
         directories:
           - path: apps/dev/*
@@ -24,7 +24,7 @@ spec:
       source:
         plugin:
           name: kustomize-build-with-helm
-        repoURL: https://gitlab.com/vehagn/mini-homelab.git
+        repoURL: https://github.com/mitchross/k3s-argocd-raspberrypi
         targetRevision: HEAD
         path: '{{ path }}'
       destination:

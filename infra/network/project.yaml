@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: network
+  namespace: argocd
+spec:
+  sourceRepos:
+    - 'https://gitlab.com/vehagn/mini-homelab.git'
+    - 'https://prometheus-community.github.io/helm-charts'
+    - 'https://argoproj.github.io/argo-helm'
+  destinations:
+    - namespace: 'adguard'
+      server: '*'
+    - namespace: 'argocd'
+      server: '*'
+    - namespace: 'cloudflared'
+      server: '*'
+    - namespace: 'gateway'
+      server: '*'
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'

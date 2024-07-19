@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: media
+  namespace: argocd
+spec:
+  sourceRepos:
+    - 'https://gitlab.com/vehagn/mini-homelab.git'
+  destinations:
+    - namespace: 'argocd'
+      server: '*'
+    - namespace: 'jellyfin'
+      server: '*'
+    - namespace: 'plex'
+      server: '*'
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'

@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: whoami-dedicated
+  namespace: whoami
+  annotations:
+    cert-manager.io/cluster-issuer: cloudflare-cluster-issuer
+    ingress.cilium.io/loadbalancer-mode: dedicated
+spec:
+  ingressClassName: cilium
+  tls:
+    - hosts:
+        - whoami-dedicated.euclid.stonegarden.dev
+      secretName: whoami-dedicated-tls
+  rules:
+    - host: whoami-dedicated.euclid.stonegarden.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: whoami
+                port:
+                  number: 80

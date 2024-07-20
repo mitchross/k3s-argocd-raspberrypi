@@ -17,4 +17,5 @@ helmCharts:
         credentialsKey: 1password-credentials.json
         serviceType: ClusterIP
 
-namespace: 1passwordco
+namespace: 1passwordconnect
+

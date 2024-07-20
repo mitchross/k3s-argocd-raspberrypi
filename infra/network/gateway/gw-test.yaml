@@ -22,7 +22,7 @@ spec:
 #    - protocol: TLS
 #      port: 443
 #      name: proxmox-tls-passthrough
-#      hostname: "proxmox.euclid.stonegarden.dev"
+#      hostname: "proxmox.vanillax.xyz"
 #      tls:
 #        mode: Passthrough
 #      allowedRoutes:

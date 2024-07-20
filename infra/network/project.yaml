@@ -17,6 +17,8 @@ spec:
       server: '*'
     - namespace: 'gateway'
       server: '*'
+    - namespace: 'external-dns'
+      server: '*'
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'

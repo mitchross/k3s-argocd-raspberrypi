@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - external-secret.yaml
+
+helmCharts:
+  - name: external-dns
+    repo: https://kubernetes-sigs.github.io/external-dns/
+    version: 1.14.4
+    releaseName: external-dns
+    namespace: external-dns
+    valuesInline:
+      provider:
+        name: cloudflare
+      fullnameOverride: external-dns
+      policy: sync
+      registry: txt
+      txtOwnerId: kubernetes
+      sources:
+        - service
+        - ingress
+        - crd
+      env:
+        - name: CF_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: external-dns
+              key: cloudflare-api-key
+      annotationFilter: "external-dns.custom/type in (public, private)"
+
+namespace: external-dns
+
+commonAnnotations:
+  argocd.argoproj.io/sync-options: PruneLast=true
+  argocd.argoproj.io/sync-wave: "20"

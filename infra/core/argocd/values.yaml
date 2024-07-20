@@ -9,12 +9,21 @@ configs:
         generate:
           command: [ "sh", "-c" ]
           args: [ "kustomize build --enable-helm" ]
+      argocd-vault-plugin:
+        allowConcurrency: true
+        discover:
+          find:
+            command: [sh, -c, 'find . -name "*.yaml" | xargs -I {} grep -l "<path:" {}']
+        generate:
+          command: [sh, -c]
+          args:
+            - |
+              argocd-vault-plugin generate .
   params:
     server.insecure: true
 
 crds:
   install: true
-  # -- Keep CRDs on chart uninstall
   keep: false
 
 repoServer:
@@ -34,10 +43,69 @@ repoServer:
           subPath: kustomize-build-with-helm.yaml
         - mountPath: /tmp
           name: cmp-tmp
+    - name: plugin-avp-directory-include
+      command: [/var/run/argocd/argocd-cmp-server]
+      image: '{{ default .Values.global.image.repository .Values.repoServer.image.repository }}:{{ default (include "argo-cd.defaultTag" .) .Values.repoServer.image.tag }}'
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+      volumeMounts:
+        - mountPath: /var/run/argocd
+          name: var-files
+        - mountPath: /home/argocd/cmp-server/plugins
+          name: plugins
+        - mountPath: /tmp
+          name: cmp-tmp
+        - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+          subPath: avp-directory-include.yaml
+          name: cmp-plugin
+        - name: custom-tools
+          subPath: argocd-vault-plugin
+          mountPath: /usr/local/bin/argocd-vault-plugin
   volumes:
     - name: cmp-kustomize-build-with-helm
       configMap:
         name: argocd-cmp-cm
     - name: cmp-tmp
-      emptyDir: { }
+      emptyDir: {}
+    - name: cmp-plugin
+      configMap:
+        name: cmp-plugin
+    - name: custom-tools
+      emptyDir: {}
+  initContainers:
+    - name: download-tools
+      image: alpine:3.18
+      command: [sh, -c]
+      env:
+        - name: AVP_VERSION
+          value: "1.17.0"
+      args:
+        - >-
+          wget -O argocd-vault-plugin
+          https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v${AVP_VERSION}/argocd-vault-plugin_${AVP_VERSION}_linux_amd64 &&
+          chmod +x argocd-vault-plugin &&
+          mv argocd-vault-plugin /custom-tools/
+      volumeMounts:
+        - mountPath: /custom-tools
+          name: custom-tools
 
+extraObjects:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: cmp-plugin
+    data:
+      avp-directory-include.yaml: |
+        apiVersion: argoproj.io/v1alpha1
+        kind: ConfigManagementPlugin
+        metadata:
+          name: argocd-vault-plugin
+        spec:
+          allowConcurrency: true
+          discover:
+            find:
+              command: [sh, -c, 'find . -name "*.yaml" | xargs -I {} grep -l "<path:" {}']
+          generate:
+            command: [sh, -c, 'argocd-vault-plugin generate ./']
+          lockRepo: false

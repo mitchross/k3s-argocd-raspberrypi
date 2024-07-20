@@ -4,6 +4,17 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - external-secret.yaml
-  - 1passwordconnect-app.yaml
 
-namespace: 1passwordconnect
+helmCharts:
+  - name: connect
+    repo: https://1password.github.io/connect-helm-charts
+    version: 1.15.0
+    releaseName: 1passwordconnect
+    namespace: 1passwordconnect
+    valuesInline:
+      connect:
+        credentialsName: 1passwordconnect
+        credentialsKey: 1password-credentials.json
+        serviceType: ClusterIP
+
+namespace: 1passwordco

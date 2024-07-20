@@ -3,7 +3,7 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
-  - external-secret.yaml
+  - external-secrets.yaml
   - cluster-secret-store.yaml
 
 helmCharts:

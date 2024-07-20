@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - external-secret.yaml
+  - https://raw.githubusercontent.com/kubernetes-sigs/external-dns/master/docs/contributing/crd-source/crd-manifest.yaml
 
 helmCharts:
   - name: external-dns
@@ -12,6 +13,7 @@ helmCharts:
     releaseName: external-dns
     namespace: external-dns
     valuesInline:
+      installCRDs: true
       provider:
         name: cloudflare
       fullnameOverride: external-dns
@@ -32,6 +34,3 @@ helmCharts:
 
 namespace: external-dns
 
-commonAnnotations:
-  argocd.argoproj.io/sync-options: PruneLast=true
-  argocd.argoproj.io/sync-wave: "20"

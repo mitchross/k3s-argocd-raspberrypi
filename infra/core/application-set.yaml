@@ -3,8 +3,6 @@ kind: ApplicationSet
 metadata:
   name: core
   namespace: argocd
-  labels:
-    dev.stonegarden: core
 spec:
   generators:
     - git:
@@ -27,7 +25,7 @@ spec:
         path: '{{ path }}'
       destination:
         name: in-cluster
-        namespace: argocd
+        namespace: '{{ path.basename }}'
       syncPolicy:
         automated:
           selfHeal: true

@@ -30,6 +30,13 @@ configs:
   cmp:
     create: true
     plugins:
+      argocd-vault-plugin-kustomize-build-with-helm:
+        generate:
+          command: [sh, -c]
+          args:
+            - |
+              argocd-vault-plugin generate . |
+              kustomize build --enable-helm
       kustomize-build-with-helm:
         generate:
           command: [ "sh", "-c" ]
@@ -44,13 +51,7 @@ configs:
           args:
             - |
               argocd-vault-plugin generate .
-      argocd-vault-plugin-kustomize-build-with-helm:
-        generate:
-          command: [sh, -c]
-          args:
-            - |
-              argocd-vault-plugin generate . |
-              kustomize build --enable-helm
+
   params:
     server.insecure: true
 

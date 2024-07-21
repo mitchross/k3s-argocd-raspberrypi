@@ -1,13 +1,32 @@
+global:
+  image:
+    imagePullPolicy: IfNotPresent
+
 configs:
   cm:
     create: true
     application.resourceTrackingMethod: "annotation+label"
-    env:
-      AVP_AUTH_TYPE: k8s
-      AVP_K8S_ROLE: argocd
-      AVP_K8S_MOUNT_PATH: /v1/auth/kubernetes
-      AVP_TYPE: vault
-      AVP_VAULT_ADDR: http://vault.vault.svc.cluster.local:8200
+    url: "https://argocd.<path:stringreplacesecret#domain>"
+    dex.config: |
+      connectors:
+        - type: oidc
+          name: authentik
+          id: authentik
+          config:
+            issuer: https://auth.<path:stringreplacesecret#domain>/application/o/argocd/
+            clientID: $sso:client_id
+            clientSecret: $sso:client_secret
+            insecureEnableGroups: true
+            scopes:
+              - openid
+              - profile
+              - email
+    resource.compareoptions: |
+      ignoreAggregatedRoles: true
+  rbac:
+    create: true
+    policy.csv: |
+      g, ArgoCD Admin, role:admin
   cmp:
     create: true
     plugins:
@@ -25,6 +44,13 @@ configs:
           args:
             - |
               argocd-vault-plugin generate .
+      argocd-vault-plugin-kustomize-build-with-helm:
+        generate:
+          command: [sh, -c]
+          args:
+            - |
+              argocd-vault-plugin generate . |
+              kustomize build --enable-helm
   params:
     server.insecure: true
 
@@ -32,29 +58,55 @@ crds:
   install: true
   keep: false
 
+server:
+  extraArgs:
+    - --insecure
+
 repoServer:
+  rbac:
+    - apiGroups: [""]
+      resources: ["secrets"]
+      verbs: ["get", "watch", "list"]
+  volumes:
+    - name: cmp-plugin
+      configMap:
+        name: argocd-cmp-cm
+    - name: cmp-tmp
+      emptyDir: {}
+    - name: custom-tools
+      emptyDir: {}
+  volumeMounts:
+    - mountPath: /home/argocd/cmp-server/plugins
+      name: plugins
+    - mountPath: /tmp
+      name: cmp-tmp
+    - name: custom-tools
+      mountPath: /usr/local/bin
   extraContainers:
     - name: kustomize-build-with-helm
       command:
         - argocd-cmp-server
-      image: '{{ default .Values.global.image.repository .Values.repoServer.image.repository }}:{{ default (include "argo-cd.defaultTag" .) .Values.repoServer.image.tag }}'
+      image: '{{ .Values.global.image.repository }}:{{ .Values.global.image.tag }}'
       securityContext:
         runAsNonRoot: true
         runAsUser: 999
       volumeMounts:
         - name: plugins
           mountPath: /home/argocd/cmp-server/plugins
-        - name: cmp-kustomize-build-with-helm
+        - name: cmp-plugin
           mountPath: /home/argocd/cmp-server/config/plugin.yaml
           subPath: kustomize-build-with-helm.yaml
         - mountPath: /tmp
           name: cmp-tmp
     - name: plugin-avp-directory-include
       command: [/var/run/argocd/argocd-cmp-server]
-      image: '{{ default .Values.global.image.repository .Values.repoServer.image.repository }}:{{ default (include "argo-cd.defaultTag" .) .Values.repoServer.image.tag }}'
+      image: '{{ .Values.global.image.repository }}:{{ .Values.global.image.tag }}'
       securityContext:
         runAsNonRoot: true
         runAsUser: 999
+      env:
+        - name: AVP_TYPE
+          value: kubernetessecret
       volumeMounts:
         - mountPath: /var/run/argocd
           name: var-files
@@ -68,17 +120,6 @@ repoServer:
         - name: custom-tools
           subPath: argocd-vault-plugin
           mountPath: /usr/local/bin/argocd-vault-plugin
-  volumes:
-    - name: cmp-kustomize-build-with-helm
-      configMap:
-        name: argocd-cmp-cm
-    - name: cmp-tmp
-      emptyDir: {}
-    - name: cmp-plugin
-      configMap:
-        name: cmp-plugin
-    - name: custom-tools
-      emptyDir: {}
   initContainers:
     - name: download-tools
       image: alpine:3.18
@@ -114,4 +155,29 @@ extraObjects:
               command: [sh, -c, 'find . -name "*.yaml" | xargs -I {} grep -l "<path:" {}']
           generate:
             command: [sh, -c, 'argocd-vault-plugin generate ./']
+          lockRepo: false
+      kustomize-build-with-helm.yaml: |
+        apiVersion: argoproj.io/v1alpha1
+        kind: ConfigManagementPlugin
+        metadata:
+          name: kustomize-build-with-helm
+        spec:
+          allowConcurrency: true
+          generate:
+            command: [ "sh", "-c" ]
+            args: [ "kustomize build --enable-helm" ]
+          lockRepo: false
+      argocd-vault-plugin-kustomize-build-with-helm.yaml: |
+        apiVersion: argoproj.io/v1alpha1
+        kind: ConfigManagementPlugin
+        metadata:
+          name: argocd-vault-plugin-kustomize-build-with-helm
+        spec:
+          allowConcurrency: true
+          generate:
+            command: [sh, -c]
+            args:
+              - |
+                argocd-vault-plugin generate . |
+                kustomize build --enable-helm
           lockRepo: false

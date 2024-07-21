@@ -21,7 +21,7 @@ spec:
       project: core
       source:
         plugin:
-          name: kustomize-build-with-helm
+          name: argocd-vault-plugin-kustomize-build-with-helm
         repoURL: https://github.com/mitchross/k3s-argocd-raspberrypi
         targetRevision: HEAD
         path: '{{ path }}'

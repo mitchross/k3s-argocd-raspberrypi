@@ -5,6 +5,7 @@ resources:
   - ns.yaml
   - http-route.yaml
   - rbac.yaml
+  - external-secret.yaml
 
 helmCharts:
   - name: argo-cd

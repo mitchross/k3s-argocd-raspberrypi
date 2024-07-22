@@ -18,22 +18,20 @@ configMapGenerator:
     behavior: merge
     literals:
       - |
-        data:
-          kustomize-build-with-helm.yaml: |
-            apiVersion: argoproj.io/v1alpha1
-            kind: ConfigManagementPlugin
-            metadata:
-              name: kustomize-build-with-helm
-            spec:
-              generate:
-                command: ["sh", "-c"]
-                args: ["kustomize build --enable-helm"]
-          avp-directory-include.yaml: |
-            apiVersion: argoproj.io/v1alpha1
-            kind: ConfigManagementPlugin
-            metadata:
-              name: avp-directory-include
-            spec:
-              generate:
-                command: [bash, -c]
-                args: [argocd-vault-plugin generate $ARGOCD_ENV_FILE_NAME]
+        kustomize-build-with-helm.yaml=apiVersion: argoproj.io/v1alpha1
+        kind: ConfigManagementPlugin
+        metadata:
+          name: kustomize-build-with-helm
+        spec:
+          generate:
+            command: ["sh", "-c"]
+            args: ["kustomize build --enable-helm"]
+      - |
+        avp-directory-include.yaml=apiVersion: argoproj.io/v1alpha1
+        kind: ConfigManagementPlugin
+        metadata:
+          name: avp-directory-include
+        spec:
+          generate:
+            command: [bash, -c]
+            args: [argocd-vault-plugin generate $ARGOCD_ENV_FILE_NAME]

@@ -16,6 +16,7 @@ helmCharts:
 configMapGenerator:
   - name: argocd-cmp-cm
     namespace: argocd
+    behavior: merge
     literals:
       - |
         kustomize-build-with-helm.yaml=apiVersion: argoproj.io/v1alpha1

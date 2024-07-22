@@ -5,10 +5,13 @@ configs:
   cmp:
     create: true
     plugins:
-      kustomize-build-with-helm:
+      kustomize-build:  # Changed from kustomize-build-with-helm to match the error message
+        init:
+          command: ["/bin/sh", "-c"]
+          args: ["kustomize version"]
         generate:
-          command: [ "sh", "-c" ]
-          args: [ "kustomize build --enable-helm" ]
+          command: ["kustomize"]
+          args: ["build"]
       argocd-vault-plugin:
         generate:
           command: ["argocd-vault-plugin"]
@@ -21,28 +24,25 @@ configs:
 
 crds:
   install: true
-  # -- Keep CRDs on chart uninstall
   keep: false
 
 repoServer:
   extraContainers:
-    - name: kustomize-build-with-helm
-      command:
-        - argocd-cmp-server
-      image: '{{ default .Values.global.image.repository .Values.repoServer.image.repository }}:{{ default (include "argo-cd.defaultTag" .) .Values.repoServer.image.tag }}'
+    - name: kustomize-build
+      command: ["/var/run/argocd/argocd-cmp-server"]
+      image: argoproj/argocd:v2.6.7  # Use the ArgoCD image which includes kustomize
       securityContext:
         runAsNonRoot: true
         runAsUser: 999
       volumeMounts:
+        - name: var-files
+          mountPath: /var/run/argocd
         - name: plugins
           mountPath: /home/argocd/cmp-server/plugins
-        - name: cmp-kustomize-build-with-helm
-          mountPath: /home/argocd/cmp-server/config/plugin.yaml
-          subPath: kustomize-build-with-helm.yaml
-        - mountPath: /tmp
-          name: cmp-tmp
+        - name: cmp-tmp
+          mountPath: /tmp
     - name: argocd-vault-plugin
-      command: [/var/run/argocd/argocd-cmp-server]
+      command: ["/var/run/argocd/argocd-cmp-server"]
       image: argoproj/argocd-vault-plugin:release-1.13
       securityContext:
         runAsNonRoot: true
@@ -55,14 +55,11 @@ repoServer:
         - mountPath: /tmp
           name: cmp-tmp
   volumes:
-    - name: cmp-kustomize-build-with-helm
-      configMap:
-        name: argocd-cmp-cm
-    - name: cmp-tmp
-      emptyDir: {}
     - name: var-files
       emptyDir: {}
     - name: plugins
+      emptyDir: {}
+    - name: cmp-tmp
       emptyDir: {}
 
 initContainers:

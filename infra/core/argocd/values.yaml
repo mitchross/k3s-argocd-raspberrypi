@@ -9,6 +9,13 @@ configs:
         generate:
           command: [ "sh", "-c" ]
           args: [ "kustomize build --enable-helm" ]
+      argocd-vault-plugin:
+        generate:
+          command: ["argocd-vault-plugin"]
+        discover:
+          find:
+            command: ["sh", "-c"]
+            args: ["find . -name '*.yaml' | xargs -I {} grep -l '<path:' {}"]
   params:
     server.insecure: true
 
@@ -34,10 +41,38 @@ repoServer:
           subPath: kustomize-build-with-helm.yaml
         - mountPath: /tmp
           name: cmp-tmp
+    - name: argocd-vault-plugin
+      command: [/var/run/argocd/argocd-cmp-server]
+      image: argoproj/argocd-vault-plugin:release-1.13
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+      volumeMounts:
+        - mountPath: /var/run/argocd
+          name: var-files
+        - mountPath: /home/argocd/cmp-server/plugins
+          name: plugins
+        - mountPath: /tmp
+          name: cmp-tmp
   volumes:
     - name: cmp-kustomize-build-with-helm
       configMap:
         name: argocd-cmp-cm
     - name: cmp-tmp
-      emptyDir: { }
+      emptyDir: {}
+    - name: var-files
+      emptyDir: {}
+    - name: plugins
+      emptyDir: {}
 
+initContainers:
+  - name: download-tools
+    image: alpine:3.8
+    command: [sh, -c]
+    args:
+      - wget -O argocd-vault-plugin https://github.com/argoproj-labs/argocd-vault-plugin/releases/latest/download/argocd-vault-plugin_linux_amd64 &&
+        chmod +x argocd-vault-plugin &&
+        mv argocd-vault-plugin /custom-tools/
+    volumeMounts:
+      - mountPath: /custom-tools
+        name: custom-tools

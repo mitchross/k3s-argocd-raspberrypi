@@ -2,16 +2,11 @@ configs:
   cm:
     create: true
     application.resourceTrackingMethod: "annotation+label"
+    # Enable custom Kustomize options
+    kustomize.buildOptions: "--enable-helm"
   cmp:
     create: true
     plugins:
-      kustomize-build:  # Changed from kustomize-build-with-helm to match the error message
-        init:
-          command: ["/bin/sh", "-c"]
-          args: ["kustomize version"]
-        generate:
-          command: ["kustomize"]
-          args: ["build"]
       argocd-vault-plugin:
         generate:
           command: ["argocd-vault-plugin"]
@@ -28,19 +23,6 @@ crds:
 
 repoServer:
   extraContainers:
-    - name: kustomize-build
-      command: ["/var/run/argocd/argocd-cmp-server"]
-      image: argoproj/argocd:v2.6.7  # Use the ArgoCD image which includes kustomize
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 999
-      volumeMounts:
-        - name: var-files
-          mountPath: /var/run/argocd
-        - name: plugins
-          mountPath: /home/argocd/cmp-server/plugins
-        - name: cmp-tmp
-          mountPath: /tmp
     - name: argocd-vault-plugin
       command: ["/var/run/argocd/argocd-cmp-server"]
       image: argoproj/argocd-vault-plugin:release-1.13
@@ -62,6 +44,12 @@ repoServer:
     - name: cmp-tmp
       emptyDir: {}
 
+# Ensure the main ArgoCD containers have the necessary tools
+global:
+  image:
+    repository: argoproj/argocd
+    tag: v2.6.7  # Use a version that includes Kustomize with Helm support
+
 initContainers:
   - name: download-tools
     image: alpine:3.8
@@ -73,3 +61,22 @@ initContainers:
     volumeMounts:
       - mountPath: /custom-tools
         name: custom-tools
+
+server:
+  config:
+    # Enable custom health check for Kustomize applications
+    resource.customizations: |
+      argoproj.io/Application:
+        health.lua: |
+          hs = {}
+          hs.status = "Progressing"
+          hs.message = ""
+          if obj.status ~= nil then
+            if obj.status.health ~= nil then
+              hs.status = obj.status.health.status
+              if obj.status.health.message ~= nil then
+                hs.message = obj.status.health.message
+              end
+            end
+          end
+          return hs

@@ -18,8 +18,8 @@ configMapGenerator:
     namespace: argocd
     behavior: create
     literals:
-      - |
-        kustomize-build-with-helm.yaml=apiVersion: argoproj.io/v1alpha1
+      - kustomize-build-with-helm.yaml=|
+        apiVersion: argoproj.io/v1alpha1
         kind: ConfigManagementPlugin
         metadata:
           name: kustomize-build-with-helm
@@ -27,8 +27,8 @@ configMapGenerator:
           generate:
             command: ["sh", "-c"]
             args: ["kustomize build --enable-helm"]
-      - |
-        avp-directory-include.yaml=apiVersion: argoproj.io/v1alpha1
+      - avp-directory-include.yaml=|
+        apiVersion: argoproj.io/v1alpha1
         kind: ConfigManagementPlugin
         metadata:
           name: avp-directory-include

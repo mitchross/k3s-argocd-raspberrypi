@@ -1,8 +1,12 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+
 resources:
   - ns.yaml
   - http-route.yaml
+  - external-secret.yaml
+  - rbac.yaml
+
 helmCharts:
   - name: argo-cd
     repo: https://argoproj.github.io/argo-helm
@@ -10,26 +14,3 @@ helmCharts:
     releaseName: "argocd"
     namespace: argocd
     valuesFile: values.yaml
-configMapGenerator:
-  - name: argocd-cmp-cm
-    namespace: argocd
-    behavior: create
-    literals:
-      - "kustomize-build-with-helm.yaml=apiVersion: argoproj.io/v1alpha1\nkind: ConfigManagementPlugin\nmetadata:\n  name: kustomize-build-with-helm\nspec:\n  generate:\n    command: [\"sh\", \"-c\"]\n    args: [\"kustomize build --enable-helm\"]"
-      - "avp-directory-include.yaml=apiVersion: argoproj.io/v1alpha1\nkind: ConfigManagementPlugin\nmetadata:\n  name: avp-directory-include\nspec:\n  generate:\n    command: [bash, -c]\n    args: [argocd-vault-plugin generate $ARGOCD_ENV_FILE_NAME]"
-patches:
-  - target:
-      kind: Deployment
-      name: argocd-repo-server
-    patch: |-
-      - op: add
-        path: /spec/template/spec/volumes/-
-        value:
-          name: cmp-plugin
-          configMap:
-            name: argocd-cmp-cm
-      - op: add
-        path: /spec/template/spec/containers/0/volumeMounts/-
-        value:
-          name: cmp-plugin
-          mountPath: /home/argocd/cmp-server/plugins

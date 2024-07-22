@@ -13,26 +13,10 @@ helmCharts:
 configMapGenerator:
   - name: argocd-cmp-cm
     namespace: argocd
-    behavior: merge
+    behavior: create
     literals:
-      - |
-        kustomize-build-with-helm.yaml=apiVersion: argoproj.io/v1alpha1
-        kind: ConfigManagementPlugin
-        metadata:
-          name: kustomize-build-with-helm
-        spec:
-          generate:
-            command: ["sh", "-c"]
-            args: ["kustomize build --enable-helm"]
-      - |
-        avp-directory-include.yaml=apiVersion: argoproj.io/v1alpha1
-        kind: ConfigManagementPlugin
-        metadata:
-          name: avp-directory-include
-        spec:
-          generate:
-            command: [bash, -c]
-            args: [argocd-vault-plugin generate $ARGOCD_ENV_FILE_NAME]
+      - "kustomize-build-with-helm.yaml=apiVersion: argoproj.io/v1alpha1\nkind: ConfigManagementPlugin\nmetadata:\n  name: kustomize-build-with-helm\nspec:\n  generate:\n    command: [\"sh\", \"-c\"]\n    args: [\"kustomize build --enable-helm\"]"
+      - "avp-directory-include.yaml=apiVersion: argoproj.io/v1alpha1\nkind: ConfigManagementPlugin\nmetadata:\n  name: avp-directory-include\nspec:\n  generate:\n    command: [bash, -c]\n    args: [argocd-vault-plugin generate $ARGOCD_ENV_FILE_NAME]"
 patches:
   - target:
       kind: Deployment

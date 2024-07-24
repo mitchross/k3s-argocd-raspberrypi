@@ -8,7 +8,7 @@ spec:
     - name: stonegarden
       namespace: gateway
   hostnames:
-    - "keycloak.stonegarden.dev"
+    - "keycloak.vanillax.xyz"
   rules:
     - matches:
         - path:

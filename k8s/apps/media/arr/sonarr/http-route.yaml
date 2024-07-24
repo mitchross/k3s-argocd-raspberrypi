@@ -8,7 +8,7 @@ spec:
     - name: stonegarden
       namespace: gateway
   hostnames:
-    - "sonarr.stonegarden.dev"
+    - "sonarr.vanillax.xyz"
   rules:
     - matches:
         - path:

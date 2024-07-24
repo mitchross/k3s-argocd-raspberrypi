@@ -8,7 +8,7 @@ spec:
     - name: stonegarden
       namespace: gateway
   hostnames:
-    - "argocd.stonegarden.dev"
+    - "argocd.vanillax.xyz"
   rules:
     - matches:
         - path:

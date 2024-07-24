@@ -8,7 +8,7 @@ spec:
     - name: stonegarden
       namespace: gateway
   hostnames:
-    - "radarr.stonegarden.dev"
+    - "radarr.vanillax.xyz"
   rules:
     - matches:
         - path:

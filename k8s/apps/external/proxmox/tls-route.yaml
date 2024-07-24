@@ -8,7 +8,7 @@ spec:
     - name: tls-passthrough
       namespace: gateway
   hostnames:
-    - "proxmox.stonegarden.dev"
+    - "proxmox.vanillax.xyz"
   rules:
     - backendRefs:
         - name: proxmox

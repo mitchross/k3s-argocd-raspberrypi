@@ -75,7 +75,7 @@ ingressController:
   loadbalancerMode: shared
   service:
     annotations:
-      io.cilium/lb-ipam-ips: 192.168.1.223
+      io.cilium/lb-ipam-ips: 192.168.100.47
     # Random values so Argo CD doesn't complain about the service being out of sync
     insecureNodePort: 32434
     secureNodePort: 31247

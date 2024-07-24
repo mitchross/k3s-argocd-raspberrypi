@@ -15,7 +15,7 @@ ingress:
   enabled: true
   annotations:
     cert-manager.io/cluster-issuer: cloudflare-cluster-issuer
-  hostname: keycloak.stonegarden.dev
+  hostname: keycloak.vanillax.xyz
   pathType: Prefix
   path: /
   tls: true

@@ -8,7 +8,7 @@ spec:
     - name: stonegarden
       namespace: gateway
   hostnames:
-    - "haos.stonegarden.dev"
+    - "haos.vanillax.xyz"
   rules:
     - backendRefs:
         - name: home-assistant

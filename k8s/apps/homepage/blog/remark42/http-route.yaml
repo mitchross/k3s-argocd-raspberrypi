@@ -8,7 +8,7 @@ spec:
     - name: stonegarden
       namespace: gateway
   hostnames:
-    - "remark42.stonegarden.dev"
+    - "remark42.vanillax.xyz"
   rules:
     - matches:
         - path:

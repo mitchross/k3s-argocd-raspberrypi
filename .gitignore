@@ -3,7 +3,8 @@ charts/example
 **/infra/**/charts
 *secret*.yaml
 
-**/.terraform/*
+.terraform
+output
 
 *.tfstate
 *.tfstate.*
@@ -11,9 +12,15 @@ charts/example
 *.tfvars
 *.tfvars.json
 
+*.lock.hcl
+
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
 
 *.qcow2
+*.raw
+
+*.cert
+*.key

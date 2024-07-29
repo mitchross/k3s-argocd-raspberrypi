@@ -23,6 +23,7 @@ ipam:
 
 operator:
   rollOutPods: true
+  replicas: 1
   resources:
     limits:
       cpu: 500m
@@ -75,7 +76,7 @@ ingressController:
   loadbalancerMode: shared
   service:
     annotations:
-      io.cilium/lb-ipam-ips: 192.168.100.47
+      io.cilium/lb-ipam-ips: 192.168.100.39
     # Random values so Argo CD doesn't complain about the service being out of sync
     insecureNodePort: 32434
     secureNodePort: 31247

@@ -14,5 +14,5 @@ resources:
   - ns.yaml
   - svc.yaml
   - pvc.yaml
-  - ingress.yaml
+  #- ingress.yaml
   - deployment.yaml

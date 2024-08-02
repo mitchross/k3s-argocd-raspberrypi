@@ -7,29 +7,9 @@ warp-routing:
   enabled: true
 
 ingress:
-  - hostname: hello.euclid.vanillax.xyz
-    service: hello_world
-  - hostname: proxmox.vanillax.xyz
-    service: https://proxmox.proxmox.svc.cluster.local:443
-    #service: https://cilium-gateway-tls-passthrough.gateway.svc.cluster.local:443
-    originRequest:
-      originServerName: proxmox.vanillax.xyz
-  - hostname: truenas.vanillax.xyz
-    service: https://192.168.10.133:443
-    #service: https://truenas.truenas.svc.cluster.local:443
-    #service: https://cilium-gateway-tls-passthrough.gateway.svc.cluster.local:443
-    originRequest:
-      originServerName: truenas.vanillax.xyz
-  - hostname: "*.euclid.vanillax.xyz"
-    service: https://cilium-gateway-euclid.gateway.svc.cluster.local:443
-    originRequest:
-      originServerName: "*.euclid.vanillax.xyz"
   - hostname: "*.vanillax.xyz"
     service: https://cilium-gateway-stonegarden.gateway.svc.cluster.local:443
     originRequest:
       originServerName: "*.vanillax.xyz"
-  - hostname: vanillax.xyz
-    service: https://cilium-gateway-stonegarden.gateway.svc.cluster.local:443
-    originRequest:
-      originServerName: vanillax.xyz
+
   - service: http_status:404

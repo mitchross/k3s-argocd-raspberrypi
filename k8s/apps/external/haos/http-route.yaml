@@ -5,7 +5,7 @@ metadata:
   namespace: haos
 spec:
   parentRefs:
-    - name: stonegarden
+    - name: internal
       namespace: gateway
   hostnames:
     - "haos.vanillax.xyz"

@@ -5,7 +5,7 @@ metadata:
   namespace: blog
 spec:
   parentRefs:
-    - name: stonegarden
+    - name: internal
       namespace: gateway
   hostnames:
     - "remark42.vanillax.xyz"

@@ -5,7 +5,7 @@ metadata:
   namespace: keycloak
 spec:
   parentRefs:
-    - name: stonegarden
+    - name: internal
       namespace: gateway
   hostnames:
     - "keycloak.vanillax.xyz"

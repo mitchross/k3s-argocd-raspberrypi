@@ -8,4 +8,5 @@ resources:
   - cloudflare-issuer.yaml
   - gw-internal.yaml
   - gw-external.yaml
+  - ext-gateway-service.yaml
 

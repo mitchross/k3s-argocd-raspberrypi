@@ -7,7 +7,7 @@ warp-routing:
   enabled: true
 
 ingress:
-  - hostname: hello.vanillax.xyz
+  - hostname: "hello.vanillax.xyz"
     service: hello_world
   - hostname: "ingress.vanillax.xyz"
     service: https://external-gateway.gateway.svc.cluster.local:443

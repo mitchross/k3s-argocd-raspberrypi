@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: libreddit
-  namespace: media
+  namespace: libreddit
 spec:
   selector:
     matchLabels:

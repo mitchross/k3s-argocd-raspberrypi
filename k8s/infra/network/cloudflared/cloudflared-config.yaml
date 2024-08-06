@@ -9,10 +9,10 @@ warp-routing:
 ingress:
   - hostname: "hello.vanillax.xyz"
     service: hello_world
-  - hostname: "https://libreddit.vanillax.xyz"
-    service: libreddit
+  - hostname: "libreddit.vanillax.xyz"
+    service: http://libreddit.libreddit.svc.cluster.local:8080
     originRequest:
-      originServerName: "*.vanillax.xyz"
+      originServerName: "libreddit.vanillax.xyz"
   - hostname: "ingress.vanillax.xyz"
     service: https://external-gateway.gateway.svc.cluster.local:443
     originRequest:

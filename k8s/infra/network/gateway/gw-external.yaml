@@ -17,7 +17,7 @@ spec:
       hostname: "*.vanillax.xyz"
       allowedRoutes:
         namespaces:
-          from: Same
+          from: All
     - protocol: HTTPS
       port: 443
       name: https-gateway

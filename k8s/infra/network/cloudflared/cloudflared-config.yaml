@@ -11,6 +11,8 @@ ingress:
     service: hello_world
   - hostname: "https://libreddit.vanillax.xyz"
     service: libreddit
+    originRequest:
+      originServerName: "*.vanillax.xyz"
   - hostname: "ingress.vanillax.xyz"
     service: https://external-gateway.gateway.svc.cluster.local:443
     originRequest:

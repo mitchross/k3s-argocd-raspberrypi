@@ -7,11 +7,7 @@ warp-routing:
   enabled: true
 
 ingress:
-  - hostname: "libreddit.vanillax.xyz"
-    service: http://libreddit.libreddit.svc.cluster.local:8080
-    originRequest:
-      originServerName: "libreddit.vanillax.xyz"
-  - hostname: "ingress.vanillax.xyz"
+  - hostname: "*.vanillax.xyz"
     service: https://external.gateway.svc.cluster.local:443
     originRequest:
       originServerName: "*.vanillax.xyz"

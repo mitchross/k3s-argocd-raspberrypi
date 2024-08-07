@@ -8,7 +8,7 @@ warp-routing:
 
 ingress:
   - hostname: "*.vanillax.xyz"
-    service: https://192.168.100.49:443
+    service: https://cilium-gateway-external.svc.cluster.local:443
     originRequest:
       originServerName: "*.vanillax.xyz"
   - service: http_status:404

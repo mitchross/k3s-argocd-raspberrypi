@@ -9,4 +9,4 @@ resources:
   - gw-internal.yaml
   - gw-external.yaml
   - ext-gateway-service.yaml
-
+  - int-gateway-service.yaml

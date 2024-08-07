@@ -15,3 +15,4 @@ ingress:
     service: https://external.gateway.svc.cluster.local:443
     originRequest:
       originServerName: "*.vanillax.xyz"
+  - service: http_status:404

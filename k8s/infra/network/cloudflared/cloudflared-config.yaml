@@ -8,7 +8,7 @@ warp-routing:
 
 ingress:
   - hostname: "*.vanillax.xyz"
-    service: https://external.gateway.svc.cluster.local:443
+    service: https://192.168.100.49:443
     originRequest:
       originServerName: "*.vanillax.xyz"
   - service: http_status:404

@@ -13,7 +13,7 @@ spec:
   listeners:
     - protocol: HTTPS
       port: 443
-      name: https-gateway
+      name: https
       allowedRoutes:
         namespaces:
           from: All
@@ -24,7 +24,7 @@ spec:
             name: cloudflare-cert
     - protocol: HTTP
       port: 80
-      name: http-gateway
+      name: http
       hostname: "*.vanillax.xyz"
       allowedRoutes:
         namespaces:
